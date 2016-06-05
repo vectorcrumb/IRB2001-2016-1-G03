@@ -13,6 +13,7 @@ socketio = SocketIO(app)
 def hello_world():
     return render_template('main.html')
 
+
 @socketio.on('connect', namespace='/dd')
 def ws_conn():
     c = db.incr('user_count')
