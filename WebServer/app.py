@@ -13,6 +13,9 @@ socketio = SocketIO(app)
 def hello_world():
     return render_template('main.html')
 
+@app.route('/numbers')
+def numbers():
+    return render_template('numbers.html')
 
 @socketio.on('connect', namespace='/dd')
 def ws_conn():
@@ -24,6 +27,12 @@ def ws_disconn():
     print('damn')
     c = db.decr('user_count')
     socketio.emit('msg', {'count': c}, namespace='/dd')
+
+@socketio.on('number', namespace='/dd')
+def num_incr(message):
+    print(message)
+    socketio.emit('numberr', {'number': message['number']},
+                  namespace='/dd')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', debug=True)

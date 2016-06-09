@@ -9,7 +9,7 @@ def on_mouse(event, x, y, flag, param):
     if event == cv2.EVENT_MOUSEMOVE:
         x_co, y_co = x, y
 
-detector_mode = 0
+detector_mode = 1
 prev_val = ""
 
 if detector_mode == 0:
