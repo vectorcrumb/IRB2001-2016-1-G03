@@ -36,7 +36,8 @@ pos_f_s_robot = (int(mom_f_s_robot['m10'] / mom_f_s_robot['m00']), int(mom_f_s_r
 pos_b_s_robot = (int(mom_b_s_robot['m10'] / mom_b_s_robot['m00']), int(mom_b_s_robot['m01'] / mom_b_s_robot['m00']))
 
 # Average the marker positions of self bot to find its centroid
-centroid_bot = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in zip(pos_f_s_robot, pos_b_s_robot))
+centroid_bot = tuple(int((front_coord + back_coord) / 2) for front_coord,
+                                                             back_coord in zip(pos_f_s_robot, pos_b_s_robot))
 
 # Mark centroids of each discovered figure
 img = cv2.circle(img, pos_ball, 3, (255, 255, 0), -1)
@@ -52,7 +53,7 @@ img = cv2.line(img, centroid_bot, pos_ball, (0, 0, 255), 2)
 print("THETA - Radians:", theta_s_bot_ball, ", Factor of Pi:", theta_s_bot_ball / math.pi,
       ", Degrees:", math.degrees(theta_s_bot_ball))
 
-# Calculate phi of robot centrpid to reference frame
+# Calculate phi of robot centroid to reference frame
 dif_s_robot_int = (pos_f_s_robot[0] - pos_b_s_robot[0], pos_b_s_robot[1] - pos_f_s_robot[1])
 phi_s_bot_frame = math.atan2(*reversed(dif_s_robot_int))
 print("PHI - Radians:", phi_s_bot_frame, ", Factor of Pi:", phi_s_bot_frame / math.pi,
