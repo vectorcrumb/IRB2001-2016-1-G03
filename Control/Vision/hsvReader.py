@@ -2,14 +2,14 @@ import numpy as np
 import cv2, time
 
 x_co, y_co = 0, 0
-cams = {'internal': 0, 'field': 1}
+cams = 0
 
 def on_mouse(event, x, y, flag, param):
     global x_co, y_co
     if event == cv2.EVENT_MOUSEMOVE:
         x_co, y_co = x, y
 
-detector_mode = 1
+detector_mode = 0
 prev_val = ""
 
 if detector_mode == 0:
@@ -30,7 +30,7 @@ if detector_mode == 0:
             break
 
 elif detector_mode == 1:
-    cam = cv2.VideoCapture(cams['internal'])
+    cam = cv2.VideoCapture(cams)
     ret, img = cam.read()
     b_img = cv2.blur(img, (3,3))
     hsv = cv2.cvtColor(b_img, cv2.COLOR_BGR2HSV)
