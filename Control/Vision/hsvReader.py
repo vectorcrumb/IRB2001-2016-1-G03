@@ -2,14 +2,15 @@ import numpy as np
 import cv2, time
 
 x_co, y_co = 0, 0
-cams = 0
+cams = 1
+
 
 def on_mouse(event, x, y, flag, param):
     global x_co, y_co
     if event == cv2.EVENT_MOUSEMOVE:
         x_co, y_co = x, y
 
-detector_mode = 0
+detector_mode = 1
 prev_val = ""
 
 if detector_mode == 0:
@@ -44,4 +45,7 @@ elif detector_mode == 1:
         prev_val = value
         ret, img = cam.read()
         if cv2.waitKey(10) == 27:
+            cam.release()
             break
+
+cv2.destroyAllWindows()

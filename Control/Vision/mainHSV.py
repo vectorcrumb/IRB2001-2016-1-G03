@@ -2,6 +2,10 @@ import numpy as np
 import cv2
 import math
 
+
+def mouse_event(event, x, y, flags, param):
+    print(event, x, y, flags, param, sep='\n', end='\n\n\n')
+
 # Define hsv ranges
 hsv_ball = [np.array([20, 50, 50], np.uint8), np.array([30, 255, 255], np.uint8)]
 hsv_field = [np.array([65, 50, 50], np.uint8), np.array([75, 255, 255], np.uint8)]
@@ -82,6 +86,7 @@ cv2.imshow("Image", img)
 # cv2.imshow("Field", field)
 # cv2.imshow("Front of Self Robot", f_s_robot)
 # cv2.imshow("Back of Self Robot", b_s_robot)
+cv2.setMouseCallback("Image", mouse_event)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
