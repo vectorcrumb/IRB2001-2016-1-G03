@@ -1,8 +1,8 @@
 import numpy as np
 import cv2, time
 
-x_co, y_co
-cams = 1
+x_co, y_co = 0,0
+cams = 2
 
 
 def on_mouse(event, x, y, flag, param):

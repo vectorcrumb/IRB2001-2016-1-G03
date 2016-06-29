@@ -6,7 +6,7 @@ class ColorTuple:
 
     def __init__(self, h=0, threshold=5):
         self.thresh = threshold
-        self._low = np.array([self.over_clamp(h - self.thresh), 50, 50])
+        self._low = np.array([self.over_clamp(h - self.thresh), 120, 120])
         self._high = np.array([self.over_clamp(h + self.thresh), 255, 255])
 
     def __str__(self):
@@ -36,7 +36,8 @@ class ColorTuple:
     @low.setter
     def low(self, value):
         if type(value) == np.ndarray:
-            self._low = self.mod_array_first(value, -5)
+            self._low = value
+            # self._low = self.mod_array_first(value, -5)
         elif type(value) == int:
             self._low[0] = self.over_clamp(value - self.thresh)
 
@@ -47,7 +48,8 @@ class ColorTuple:
     @high.setter
     def high(self, value):
         if type(value) == np.ndarray:
-            self._high = self.mod_array_first(value, 5)
+            self._high = value
+            # self._high = self.mod_array_first(value, 5)
         elif type(value) == int:
             self._high[0] = self.over_clamp(value + self.thresh)
 
@@ -73,6 +75,19 @@ class Ranges:
     def update(self, key, hsv_val):
         if key not in self.mappings.keys():
             raise ValueError("Invalid key!")
+        print("Modified", end=' ')
+        if key == 'q':
+            print("self_big")
+        elif key == 'w':
+            print("self_small")
+        elif key == 'a':
+            print("op_big")
+        elif key == 's':
+            print("op_small")
+        elif key == 'z':
+            print("ball")
+        elif key == 'x':
+            print("field")
         self.mappings[key].high = hsv_val
         self.mappings[key].low = hsv_val
 

@@ -7,7 +7,7 @@
 #define VALOR_ADELANTE 127
 #define VALOR_ATRAS -127
 #define BUF 5
-#define Kp 0.5
+#define Kp 1.3
 
 byte incoming[BUF];
 long dir_left = 1, dir_right = 1;
@@ -16,9 +16,9 @@ void mover(int izq, int der, int dir_izq, int dir_der) {
   int error = 0;
   if (dir_izq != dir_der) {
     // En un giro, se va a 0 y el ajuste se anula.
-    error = izq + der
+    error = speed_l + speed_r
   } else {
-    error = izq - der
+    error = speed_l - speed_r
   }
   int adjust = error * Kp
   int mapizq = map(abs(izq), 0,100, 0,255);

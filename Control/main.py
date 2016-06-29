@@ -1,9 +1,8 @@
 from Vis import Ranges
 import cv2
 from socket import socket, AF_INET, SOCK_STREAM
-from numpy import zeros_like
+from numpy import zeros_like, array, uint8
 from math import atan2, sqrt, radians
-from time import sleep
 
 
 # PID vars
@@ -27,7 +26,7 @@ def pid_angular(pos_robotg, pos_robotc, pos_f):
     # phi is the angle where the robot is looking at
     phi = atan2(pos_robotc[1]-pos_robotg[1], pos_robotc[0]-pos_robotg[0])
     # th is the angle where the robot should be looking at
-    th = atan2(pos_f[1]-pos_robotg[1],pos_f[0]-pos_robotg[0])
+    th = atan2(pos_f[1]-pos_robotg[1], pos_f[0]-pos_robotg[0])
     # error is the angle between the robot's current orientation and it's desired orientation.
     error = th-phi
 
@@ -43,7 +42,7 @@ def pid_angular(pos_robotg, pos_robotc, pos_f):
 
 def angle_error(pos_robotg, pos_robotc, pos_f):
     phi = atan2(pos_robotc[1]-pos_robotg[1], pos_robotc[0]-pos_robotg[0])
-    th = atan2(pos_f[1]-pos_robotg[1],pos_f[0]-pos_robotg[0])
+    th = atan2(pos_f[1]-pos_robotg[1], pos_f[0]-pos_robotg[0])
     error = th-phi
     return error
 
@@ -76,11 +75,16 @@ def mouse_event(event, x, y, flags, param):
     if event == cv2.EVENT_MOUSEMOVE:
         x_co, y_co = x, y
     if event == cv2.EVENT_LBUTTONDOWN:
-        print('in')
+        print('HSV MOD')
+        print("q: self_big")
+        print("w: self_small")
+        print("a: op_big")
+        print("s: op_small")
+        print("z: ball")
+        print("x: field")
         key = cv2.waitKey(0)
-        print('past', key)
         try:
-            ranges.update(key, hsv_img[y, x])
+            ranges.update(chr(key), hsv_img[y, x])
         except ValueError:
             print("Wrong key!")
 
@@ -114,51 +118,81 @@ global_mask = None
 x_co, y_co = 0, 0
 prev_val = ""
 
+# Set callback on window
+cv2.namedWindow('Camera feed', cv2.WINDOW_AUTOSIZE)
+cv2.setMouseCallback('Camera feed', mouse_event)
+
 # WiFly Variables
-# IP = "192.168.0.140"
-IP = "192.168.43.114"
+IP = "192.168.0.140"
 PORT = 2000
 BUF_SIZE = 9
 PASS = "G03"
-no_fi = False
+no_fi = True
 connected = no_fi
 
 # Robot variables
 # Epsilon is the maximum allowed angle error in radians(degrees)
-eps_ang = radians(5)
+eps_ang = radians(20)
 rotate_vel = 30
 move_vel = 80
 
+lower_amarillo = array([26, 155, 175])
+upper_amarillo = array([86, 255, 255])
+lower_rojo = array([165, 125, 213])
+upper_rojo = array([255, 255, 255])
+lower_verde = array([31, 64, 211])
+upper_verde = array([91, 255, 255])
+lower_morado = array([90, 110, 195])
+upper_morado = array([150, 255, 255])
+lower_azul = array([70, 93, 255])
+upper_azul = array([130, 255, 255])
+
 # Generate empty ranges object to store HSV values
 ranges = Ranges()
-ranges.self_big.high = 45
-ranges.self_big.low = 45
-ranges.self_small.high = 150
-ranges.self_small.low = 150
-# ranges.ball.high = 30
-# ranges.ball.low = 30
-ranges.ball.high = 14
-ranges.ball.low = 14
-# ranges.op_small.high = 20
-# ranges.op_small.low = 20
-# ranges.op_big.high = 40
-# ranges.op_big.low = 40
+# ranges.self_big.low = array([43, 50, 50], uint8)
+# ranges.self_big.high = array([51, 255, 255], uint8)
+# ranges.self_small.low = array([154, 50, 50], uint8)
+# ranges.self_small.high = array([164, 255, 255], uint8)
+# ranges.ball.low = array([25, 50, 50], uint8)
+# ranges.ball.high = array([35, 255, 255], uint8)
+# ranges.field.low = array([83, 50, 50], uint8)
+# ranges.field.high = array([93, 255, 255], uint8)
+# ranges.op_big.low = array([1, 50, 50], uint8)
+# ranges.op_big.high = array([4, 255, 255], uint8)
+# ranges.op_small.low = array([105, 50, 50], uint8)
+# ranges.op_small.high = array([115, 255, 255], uint8)
+# ranges.field.low = array([80, 50, 50], uint8)
+# ranges.field.high = array([90, 255, 255], uint8)
+
+ranges.self_big.low = lower_verde
+ranges.self_big.high = upper_verde
+ranges.self_small.low = lower_morado
+ranges.self_small.high = upper_morado
+ranges.ball.low = lower_amarillo
+ranges.ball.high = upper_amarillo
+ranges.op_big.low = lower_rojo
+ranges.op_big.high = upper_rojo
+ranges.op_small.low = lower_azul
+ranges.op_small.high = upper_azul
+ranges.field.low = array([80, 50, 50], uint8)
+ranges.field.high = array([90, 255, 255], uint8)
 
 # Create camera object and WiFly socket
 cam = cv2.VideoCapture(cam_index)
+print("Init cam")
 sock = socket(AF_INET, SOCK_STREAM)
 if not no_fi:
     sock.connect((IP, PORT))
-
+print("Opened socket")
 # Ensure camera is connected and obtain first frame and confirmation
 while cam_closed:
     if cam.isOpened():
         ret, img = cam.read()
         cam_closed = not ret
-        hsv_img = cv2.blur(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (3, 3))
+        hsv_img = cv2.cvtColor(cv2.blur(img, (10, 10)), cv2.COLOR_BGR2HSV)
         global_mask = zeros_like(hsv_img)
 
-
+print("Opened cam")
 # Establish connection with WiFly module by sending passcode
 while not connected:
     data = sock.recv(BUF_SIZE)
@@ -170,12 +204,20 @@ while not connected:
     else:
         connected = False
         raise ConnectionRefusedError("Received no valid keyword.")
-
+print("Connected bot")
 # Vision loop
 while ret:
     masks = ranges.masking(hsv_img)
     # for mask in masks.values():
     #     global_mask = cv2.bitwise_or(global_mask, mask)
+    # masks = {
+    #     'self_big': cv2.inRange(hsv_img, *ranges.self_big()),
+    #     'self_small': cv2.inRange(hsv_img, *ranges.self_small()),
+    #     'op_big': cv2.inRange(hsv_img, *ranges.op_big()),
+    #     'op_small': cv2.inRange(hsv_img, *ranges.op_small()),
+    #     'ball': cv2.inRange(hsv_img, *ranges.ball()),
+    #     'field': cv2.inRange(hsv_img, *ranges.field())
+    # }
     # Calculate moments given the masks
     moments = {name: cv2.moments(img_mask) for name, img_mask in masks.items()}
     # Calculate centroids of the previous moments
@@ -185,20 +227,24 @@ while ret:
             centroids[name] = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
         except ZeroDivisionError:
             centroids[name] = (0, 0)
+    # Draw centroids
+    for centroid in centroids.values():
+        if centroid != (0, 0):
+            img = cv2.circle(img, centroid, 3, (255, 255, 255), -1)
     # Add robot centroid
     centroids['self_robot'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
                                     zip(centroids['self_big'], centroids['self_big']))
-    # Draw centroids
-    for centroid in centroids.values():
-        img = cv2.circle(img, centroid, 3, (0, 0, 0), -1)
+    img = cv2.circle(img, centroids['self_robot'], 3, (255, 0, 0), -1)
     # Show HSV value under mouse
     value = "H: {0}, S: {1}, V: {2}".format(*[hsv_img.item(y_co, x_co, i) for i in range(3)])
     if value != prev_val:
-        print(value)
-    cv2.putText(img, value, (x_co, y_co), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        # print(value)
+        pass
+    # cv2.putText(img, value, (x_co, y_co), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
     # Show images
-    cv2.imshow('Detected objects', global_mask)
+    # [cv2.imshow(name, elem) for name, elem in masks.items()]
     cv2.imshow('Camera feed', img)
+    # cv2.imshow('HSV Blurred Image', hsv_img)
     # Decide whether to rotate or advance
     e_ang = angle_error(centroids['self_big'], centroids['self_big'], centroids['ball'])
     payload = None
@@ -210,18 +256,22 @@ while ret:
     else:
         # Advance robot. Move by fixed speed. Assume that the robot doesn't go in the reverse because I fail at life
         payload = motors_to_bytes(move_vel, move_vel)
+    # print(payload)
     # Send payload to robot
-    sock.send(payload)
+    if not no_fi:
+        sock.send(payload)
     # Obtain next frame, confirmation, blurred HSV image and empty mask image
     ret, img = cam.read()
-    hsv_img = cv2.blur(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (3, 3))
-    global_mask = zeros_like(hsv_img)
+    hsv_img = cv2.cvtColor(cv2.blur(img, (10, 10)), cv2.COLOR_BGR2HSV)
+    # global_mask = zeros_like(hsv_img)
     prev_val = value
 
     k = cv2.waitKey(20)
     if k == 27:
         break
 
+if not no_fi:
+    sock.send(motors_to_bytes(0, 0))
 cam.release()
 cv2.destroyAllWindows()
 exit()
