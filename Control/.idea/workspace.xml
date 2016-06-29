@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="d9b3a6a5-0b0e-42f1-b29d-ca421815a800" name="Default" comment="Added more stuff yo">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Vision/hsvReader.py" afterPath="$PROJECT_DIR$/Vision/hsvReader.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
     </list>
     <ignored path="Control.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,8 +35,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.443459">
-              <caret line="205" column="107" selection-start-line="205" selection-start-column="107" selection-end-line="205" selection-end-column="107" />
+            <state vertical-scroll-proportion="0.5343681">
+              <caret line="212" column="27" selection-start-line="212" selection-start-column="27" selection-end-line="212" selection-end-column="27" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
                 <marker date="1467166373572" expanded="true" signature="2783:2927" placeholder="..." />
@@ -790,8 +788,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.443459">
-          <caret line="205" column="107" selection-start-line="205" selection-start-column="107" selection-end-line="205" selection-end-column="107" />
+        <state vertical-scroll-proportion="0.5343681">
+          <caret line="212" column="27" selection-start-line="212" selection-start-column="27" selection-end-line="212" selection-end-column="27" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
             <marker date="1467166373572" expanded="true" signature="2783:2927" placeholder="..." />
