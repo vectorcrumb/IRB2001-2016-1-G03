@@ -7,11 +7,11 @@ from time import sleep
 
 
 # PID vars
-Kp_d = 0.7
-Kp_a = 1
+Kp_d = 0.3
 Ki_d = 0
-Ki_a = 0
 Kd_d = 0
+Kp_a = 0
+Ki_a = 0
 Kd_a = 0
 error_prev_d = 0
 error_prev_a = 0
@@ -98,7 +98,8 @@ hsv_img = None
 global_mask = None
 
 # WiFly Variables
-IP = "192.168.0.140"
+# IP = "192.168.0.140"
+IP = "192.168.43.114"
 PORT = 2000
 BUF_SIZE = 9
 PASS = "G03"
@@ -107,12 +108,18 @@ connected = no_fi
 
 # Generate empty ranges object to store HSV values
 ranges = Ranges()
-ranges.self_big.high = 58
-ranges.self_big.low = 58
-ranges.self_small.high = 169
-ranges.self_small.low = 169
-ranges.ball.high = 20
-ranges.ball.low = 20
+ranges.self_big.high = 45
+ranges.self_big.low = 45
+ranges.self_small.high = 150
+ranges.self_small.low = 150
+# ranges.ball.high = 30
+# ranges.ball.low = 30
+ranges.ball.high = 14
+ranges.ball.low = 14
+# ranges.op_small.high = 20
+# ranges.op_small.low = 20
+# ranges.op_big.high = 40
+# ranges.op_big.low = 40
 
 # Create camera object and WiFly socket
 cam = cv2.VideoCapture(cam_index)
@@ -166,9 +173,11 @@ while ret:
     cv2.imshow('Camera feed', img)
     # Generate payload
     sig_dis = pid_distancia(centroids['self_robot'], centroids['ball'])
+    # if sig_dis < 51:
+    #     sig_dis = 51
     sig_ang = pid_angular(centroids['self_big'], centroids['self_big'], centroids['ball'])
     print("Distance Signal:", sig_dis, "Angle Signal: ", sig_ang)
-    payload = motors_to_bytes(int(sig_dis + sig_ang), int(sig_dis - sig_ang))
+    payload = motors_to_bytes(int(sig_dis - sig_ang), int(sig_dis + sig_ang))
     # print(payload)
     sock.send(payload)
     # Obtain next frame, confirmation, HSV image and empty mask image
