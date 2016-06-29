@@ -2,12 +2,12 @@ from Vis import Ranges
 import cv2
 from socket import socket, AF_INET, SOCK_STREAM
 from numpy import zeros_like
-from math import atan2, sqrt
+from math import atan2, sqrt, radians
 from time import sleep
 
 
 # PID vars
-Kp_d = 0.3
+Kp_d = 1
 Ki_d = 0
 Kd_d = 0
 Kp_a = 0
@@ -41,6 +41,18 @@ def pid_angular(pos_robotg, pos_robotc, pos_f):
     return motor_power
 
 
+def angle_error(pos_robotg, pos_robotc, pos_f):
+    phi = atan2(pos_robotc[1]-pos_robotg[1], pos_robotc[0]-pos_robotg[0])
+    th = atan2(pos_f[1]-pos_robotg[1],pos_f[0]-pos_robotg[0])
+    error = th-phi
+    return error
+
+
+def distance_error(pos_robot, pos_f):
+    error = sqrt((pos_robot[0]-pos_f[0])**2+(pos_robot[1]-pos_f[1])**2)
+    return error
+
+
 def pid_distancia(pos_robot, pos_f):
     global int_err_d
     global error_prev_d
@@ -60,6 +72,9 @@ def pid_distancia(pos_robot, pos_f):
 
 # Callback function for selecting HSV ranges
 def mouse_event(event, x, y, flags, param):
+    global x_co, y_co
+    if event == cv2.EVENT_MOUSEMOVE:
+        x_co, y_co = x, y
     if event == cv2.EVENT_LBUTTONDOWN:
         print('in')
         key = cv2.waitKey(0)
@@ -96,6 +111,8 @@ ret = True
 img = None
 hsv_img = None
 global_mask = None
+x_co, y_co = 0, 0
+prev_val = ""
 
 # WiFly Variables
 # IP = "192.168.0.140"
@@ -105,6 +122,12 @@ BUF_SIZE = 9
 PASS = "G03"
 no_fi = False
 connected = no_fi
+
+# Robot variables
+# Epsilon is the maximum allowed angle error in radians(degrees)
+eps_ang = radians(5)
+rotate_vel = 30
+move_vel = 80
 
 # Generate empty ranges object to store HSV values
 ranges = Ranges()
@@ -132,7 +155,7 @@ while cam_closed:
     if cam.isOpened():
         ret, img = cam.read()
         cam_closed = not ret
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        hsv_img = cv2.blur(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (3, 3))
         global_mask = zeros_like(hsv_img)
 
 
@@ -168,22 +191,32 @@ while ret:
     # Draw centroids
     for centroid in centroids.values():
         img = cv2.circle(img, centroid, 3, (0, 0, 0), -1)
+    # Show HSV value under mouse
+    value = "H: {0}, S: {1}, V: {2}".format(*[hsv_img.item(y_co, x_co, i) for i in range(3)])
+    if value != prev_val:
+        print(value)
+    cv2.putText(img, value, (x_co, y_co), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
     # Show images
     cv2.imshow('Detected objects', global_mask)
     cv2.imshow('Camera feed', img)
-    # Generate payload
-    sig_dis = pid_distancia(centroids['self_robot'], centroids['ball'])
-    # if sig_dis < 51:
-    #     sig_dis = 51
-    sig_ang = pid_angular(centroids['self_big'], centroids['self_big'], centroids['ball'])
-    print("Distance Signal:", sig_dis, "Angle Signal: ", sig_ang)
-    payload = motors_to_bytes(int(sig_dis - sig_ang), int(sig_dis + sig_ang))
-    # print(payload)
+    # Decide whether to rotate or advance
+    e_ang = angle_error(centroids['self_big'], centroids['self_big'], centroids['ball'])
+    payload = None
+    if abs(e_ang) > eps_ang:
+        # Rotate robot. Multiplier is -1 or 1 depending or orientation. Invert e_ang > 0 to e_ang < 0 if the robot
+        # rotates in the other direction
+        multiplier = e_ang > 0
+        payload = motors_to_bytes((1 if multiplier else -1) * rotate_vel, (-1 if multiplier else 1) * rotate_vel)
+    else:
+        # Advance robot. Move by fixed speed. Assume that the robot doesn't go in the reverse because I fail at life
+        payload = motors_to_bytes(move_vel, move_vel)
+    # Send payload to robot
     sock.send(payload)
-    # Obtain next frame, confirmation, HSV image and empty mask image
+    # Obtain next frame, confirmation, blurred HSV image and empty mask image
     ret, img = cam.read()
-    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv_img = cv2.blur(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (3, 3))
     global_mask = zeros_like(hsv_img)
+    prev_val = value
 
     k = cv2.waitKey(20)
     if k == 27:
@@ -192,21 +225,3 @@ while ret:
 cam.release()
 cv2.destroyAllWindows()
 exit()
-
-
-
-
-#
-# ref = [100,100]
-# act = [0,0]
-# first_run = True
-# while act[0] <= ref[0]:
-#     act = [act[0] + pid_distancia(act, ref), act[1] + pid_distancia(act, ref)]
-#     #ang =
-#     print act
-#     if first_run == False:
-#         if abs(ref[0]-act[0])<0.5:
-#             break
-#     sleep(0.1)
-#     act_2 = act
-#     first_run = False
