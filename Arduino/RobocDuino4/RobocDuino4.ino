@@ -18,7 +18,7 @@ void mover(int izq, int der, int dir_izq, int dir_der) {
   int error = 0;
   if (dir_izq != dir_der) {
     // En un giro, se va a 0 y el ajuste se anula.
-    error = speed_l + speed_r;
+    error = 0;
   } else {
     error = speed_l - speed_r;
   }
