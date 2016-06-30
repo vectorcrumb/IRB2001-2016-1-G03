@@ -5,17 +5,16 @@ from numpy import zeros_like, array, uint8
 from math import atan2, sqrt, radians
 
 
-# PID vars
-Kp_d = 1
-Ki_d = 0
-Kd_d = 0
-Kp_a = 0
-Ki_a = 0
-Kd_a = 0
-error_prev_d = 0
-error_prev_a = 0
-int_err_d = 0
-int_err_a = 0
+def angle_error(pos_robotg, pos_robotc, pos_f):
+    phi = atan2(pos_robotc[1]-pos_robotg[1], pos_robotc[0]-pos_robotg[0])
+    th = atan2(pos_f[1]-pos_robotg[1], pos_f[0]-pos_robotg[0])
+    error = th-phi
+    return error
+
+
+def distance_error(pos_robot, pos_f):
+    error = sqrt((pos_robot[0]-pos_f[0])**2+(pos_robot[1]-pos_f[1])**2)
+    return error
 
 
 # pos_robotg is the center of the big pelotitaw, pos_robotc is the center of the pelitaw chiquititaw
@@ -38,18 +37,6 @@ def pid_angular(pos_robotg, pos_robotc, pos_f):
     motor_power = p_power + i_power + d_power
     error_prev_a = error
     return motor_power
-
-
-def angle_error(pos_robotg, pos_robotc, pos_f):
-    phi = atan2(pos_robotc[1]-pos_robotg[1], pos_robotc[0]-pos_robotg[0])
-    th = atan2(pos_f[1]-pos_robotg[1], pos_f[0]-pos_robotg[0])
-    error = th-phi
-    return error
-
-
-def distance_error(pos_robot, pos_f):
-    error = sqrt((pos_robot[0]-pos_f[0])**2+(pos_robot[1]-pos_f[1])**2)
-    return error
 
 
 def pid_distancia(pos_robot, pos_f):
@@ -93,8 +80,9 @@ def motors_to_bytes(left_vel, right_vel):
     # TODO Implemente normalizer
     left_vel = 100 if left_vel > 100 else (-100 if left_vel < -100 else left_vel)
     right_vel = 100 if right_vel > 100 else (-100 if right_vel < -100 else right_vel)
-    print("Constrained: ", left_vel, "; ", right_vel)
-    print("Dirs: ", 1 if left_vel > 0 else 2, "; ", 1 if right_vel > 0 else 2)
+    if motor_debug:
+        print("Constrained: ", left_vel, "; ", right_vel)
+        print("Dirs: ", 1 if left_vel > 0 else 2, "; ", 1 if right_vel > 0 else 2)
     packet = bytearray()
     # Inverted
     # packet.append(1 if right_vel > 0 else 2)
@@ -109,18 +97,17 @@ def motors_to_bytes(left_vel, right_vel):
     return packet
 
 # Cam variables
-cam_index = 1
+cam_index = 0
 cam_closed = True
 ret = True
 img = None
 hsv_img = None
+blurred_img = None
 global_mask = None
 x_co, y_co = 0, 0
 prev_val = ""
-
-# Set callback on window
-cv2.namedWindow('Camera feed', cv2.WINDOW_AUTOSIZE)
-cv2.setMouseCallback('Camera feed', mouse_event)
+view_masks = True
+view_HSV = True
 
 # WiFly Variables
 IP = "192.168.0.140"
@@ -129,12 +116,25 @@ BUF_SIZE = 9
 PASS = "G03"
 no_fi = True
 connected = no_fi
+motor_debug = False
 
 # Robot variables
 # Epsilon is the maximum allowed angle error in radians(degrees)
 eps_ang = radians(20)
 rotate_vel = 30
 move_vel = 80
+
+# PID variables
+Kp_d = 1
+Ki_d = 0
+Kd_d = 0
+Kp_a = 0
+Ki_a = 0
+Kd_a = 0
+error_prev_d = 0
+error_prev_a = 0
+int_err_d = 0
+int_err_a = 0
 
 lower_amarillo = array([26, 155, 175])
 upper_amarillo = array([86, 255, 255])
@@ -146,9 +146,11 @@ lower_morado = array([90, 110, 195])
 upper_morado = array([150, 255, 255])
 lower_azul = array([70, 93, 255])
 upper_azul = array([130, 255, 255])
+lower_verde_cancha = array([80, 50, 50])
+upper_verde_cancha = array([90, 255, 255])
 
 # Generate empty ranges object to store HSV values
-ranges = Ranges()
+ranges = Ranges(threshold=7)
 # ranges.self_big.low = array([43, 50, 50], uint8)
 # ranges.self_big.high = array([51, 255, 255], uint8)
 # ranges.self_small.low = array([154, 50, 50], uint8)
@@ -164,18 +166,34 @@ ranges = Ranges()
 # ranges.field.low = array([80, 50, 50], uint8)
 # ranges.field.high = array([90, 255, 255], uint8)
 
-ranges.self_big.low = lower_verde
-ranges.self_big.high = upper_verde
-ranges.self_small.low = lower_morado
-ranges.self_small.high = upper_morado
-ranges.ball.low = lower_amarillo
-ranges.ball.high = upper_amarillo
-ranges.op_big.low = lower_rojo
-ranges.op_big.high = upper_rojo
-ranges.op_small.low = lower_azul
-ranges.op_small.high = upper_azul
-ranges.field.low = array([80, 50, 50], uint8)
-ranges.field.high = array([90, 255, 255], uint8)
+# Julio valores
+# amarillo_lower = [24,157,181]
+# amarillo_upper = [34,255,255]
+# rojo_lower = [0,52,178]
+# rojo_upper = [10,255,255]
+# azul_lower = [104,172,178]
+# azul_upper = [114,255,255]
+# verde_lower = [46,185,187]
+# verde_upper = [56,255,255]
+# rosa_lower = [162,10,137]
+# rosa_upper = [172,255,255]
+
+ranges.self_big.low = (lower_verde, True)
+ranges.self_big.high = (upper_verde, True)
+ranges.self_small.low = (lower_morado, True)
+ranges.self_small.high = (upper_morado, True)
+ranges.ball.low = (lower_amarillo, True)
+ranges.ball.high = (upper_amarillo, True)
+ranges.op_big.low = (lower_rojo, True)
+ranges.op_big.high = (upper_rojo, True)
+ranges.op_small.low = (lower_azul, True)
+ranges.op_small.high = (upper_azul, True)
+ranges.field.low = (lower_verde_cancha, True)
+ranges.field.high = (upper_verde_cancha, True)
+
+# Set callback on window
+cv2.namedWindow('Camera feed', cv2.WINDOW_AUTOSIZE)
+cv2.setMouseCallback('Camera feed', mouse_event)
 
 # Create camera object and WiFly socket
 cam = cv2.VideoCapture(cam_index)
@@ -188,9 +206,10 @@ print("Opened socket")
 while cam_closed:
     if cam.isOpened():
         ret, img = cam.read()
-        cam_closed = not ret
-        hsv_img = cv2.cvtColor(cv2.blur(img, (10, 10)), cv2.COLOR_BGR2HSV)
+        blurred_img = cv2.blur(img, (10, 10))
+        hsv_img = cv2.cvtColor(blurred_img, cv2.COLOR_BGR2HSV)
         global_mask = zeros_like(hsv_img)
+        cam_closed = not ret
 
 print("Opened cam")
 # Establish connection with WiFly module by sending passcode
@@ -210,14 +229,6 @@ while ret:
     masks = ranges.masking(hsv_img)
     # for mask in masks.values():
     #     global_mask = cv2.bitwise_or(global_mask, mask)
-    # masks = {
-    #     'self_big': cv2.inRange(hsv_img, *ranges.self_big()),
-    #     'self_small': cv2.inRange(hsv_img, *ranges.self_small()),
-    #     'op_big': cv2.inRange(hsv_img, *ranges.op_big()),
-    #     'op_small': cv2.inRange(hsv_img, *ranges.op_small()),
-    #     'ball': cv2.inRange(hsv_img, *ranges.ball()),
-    #     'field': cv2.inRange(hsv_img, *ranges.field())
-    # }
     # Calculate moments given the masks
     moments = {name: cv2.moments(img_mask) for name, img_mask in masks.items()}
     # Calculate centroids of the previous moments
@@ -242,8 +253,12 @@ while ret:
         pass
     # cv2.putText(img, value, (x_co, y_co), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
     # Show images
-    # [cv2.imshow(name, elem) for name, elem in masks.items()]
+    if view_masks:
+        [cv2.imshow(name, elem) for name, elem in masks.items()]
     cv2.imshow('Camera feed', img)
+    cv2.imshow('Blurred image', blurred_img)
+    if view_HSV:
+        cv2.imshow('HSV Image', hsv_img)
     # cv2.imshow('HSV Blurred Image', hsv_img)
     # Decide whether to rotate or advance
     e_ang = angle_error(centroids['self_big'], centroids['self_big'], centroids['ball'])
@@ -262,7 +277,8 @@ while ret:
         sock.send(payload)
     # Obtain next frame, confirmation, blurred HSV image and empty mask image
     ret, img = cam.read()
-    hsv_img = cv2.cvtColor(cv2.blur(img, (10, 10)), cv2.COLOR_BGR2HSV)
+    blurred_img = cv2.blur(img, (10, 10))
+    hsv_img = cv2.cvtColor(blurred_img, cv2.COLOR_BGR2HSV)
     # global_mask = zeros_like(hsv_img)
     prev_val = value
 

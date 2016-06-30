@@ -34,35 +34,51 @@ class ColorTuple:
         return self._low
 
     @low.setter
-    def low(self, value):
-        if type(value) == np.ndarray:
-            self._low = value
-            # self._low = self.mod_array_first(value, -5)
-        elif type(value) == int:
-            self._low[0] = self.over_clamp(value - self.thresh)
+    def low(self, val):
+        try:
+            value, flag = val
+        except ValueError:
+            raise ValueError("Incorrectly set HSV values.")
+        else:
+            if type(value) == np.ndarray:
+                # If flag == True, do not modify np array
+                if flag:
+                    self._low = value
+                else:
+                    self._low = self.mod_array_first(value, -5)
+            elif type(value) == int:
+                self._low[0] = self.over_clamp(value - self.thresh)
 
     @property
     def high(self):
         return self._high
 
     @high.setter
-    def high(self, value):
-        if type(value) == np.ndarray:
-            self._high = value
-            # self._high = self.mod_array_first(value, 5)
-        elif type(value) == int:
-            self._high[0] = self.over_clamp(value + self.thresh)
+    def high(self, val):
+        try:
+            value, flag = val
+        except ValueError:
+            raise ValueError("Incorrectly set HSV values.")
+        else:
+            if type(value) == np.ndarray:
+                # If flag == True, do not modify np array
+                if flag:
+                    self._high = value
+                else:
+                    self._high = self.mod_array_first(value, 5)
+            elif type(value) == int:
+                self._high[0] = self.over_clamp(value + self.thresh)
 
 
 class Ranges:
 
-    def __init__(self):
-        self.self_big = ColorTuple()
-        self.self_small = ColorTuple()
-        self.op_big = ColorTuple()
-        self.op_small = ColorTuple()
-        self.ball = ColorTuple()
-        self.field = ColorTuple()
+    def __init__(self, threshold=5):
+        self.self_big = ColorTuple(threshold=threshold)
+        self.self_small = ColorTuple(threshold=threshold)
+        self.op_big = ColorTuple(threshold=threshold)
+        self.op_small = ColorTuple(threshold=threshold)
+        self.ball = ColorTuple(threshold=threshold)
+        self.field = ColorTuple(threshold=threshold)
         self.mappings = {
             'q': self.self_big,
             'w': self.self_small,
@@ -88,8 +104,8 @@ class Ranges:
             print("ball")
         elif key == 'x':
             print("field")
-        self.mappings[key].high = hsv_val
-        self.mappings[key].low = hsv_val
+        self.mappings[key].high = (hsv_val, False)
+        self.mappings[key].low = (hsv_val, False)
 
     def masking(self, hsv_image):
         masks = {
