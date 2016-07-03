@@ -1,5 +1,6 @@
 import numpy as np
-from cv2 import inRange
+from cv2 import inRange, cvtColor, COLOR_HSV2BGR
+from collections import defaultdict
 
 
 class ColorTuple:
@@ -8,6 +9,7 @@ class ColorTuple:
         self.thresh = threshold
         self._low = np.array([self.over_clamp(h - self.thresh), 120, 120])
         self._high = np.array([self.over_clamp(h + self.thresh), 255, 255])
+        self._avr = np.hstack((self._low, self._low)).mean(axis=0)
 
     def __str__(self):
         return "Low range is {} and high range is {} \n".format(str(self._low), str(self._high))
@@ -30,6 +32,10 @@ class ColorTuple:
         return new_array
 
     @property
+    def avr(self):
+        return self._avr
+
+    @property
     def low(self):
         return self._low
 
@@ -48,6 +54,7 @@ class ColorTuple:
                     self._low = self.mod_array_first(value, -5)
             elif type(value) == int:
                 self._low[0] = self.over_clamp(value - self.thresh)
+        self._avr = np.hstack((self._low, self._low)).mean(axis=0)
 
     @property
     def high(self):
@@ -68,8 +75,10 @@ class ColorTuple:
                     self._high = self.mod_array_first(value, 5)
             elif type(value) == int:
                 self._high[0] = self.over_clamp(value + self.thresh)
+        self._avr = np.hstack((self._low, self._low)).mean(axis=0)
 
 
+# noinspection PyArgumentList
 class Ranges:
 
     def __init__(self, threshold=5):
@@ -87,6 +96,7 @@ class Ranges:
             'z': self.ball,
             'x': self.field
         }
+        self.centroid_colors = None
 
     def update(self, key, hsv_val):
         if key not in self.mappings.keys():
@@ -117,3 +127,14 @@ class Ranges:
             'field': inRange(hsv_image, *self.field())
         }
         return masks
+
+    def def_centroid_colors(self):
+        cen_colors = {
+            'self_big': 255 - (cvtColor(self.self_big.avr, COLOR_HSV2BGR)),
+            'self_small': 255 - (cvtColor(self.self_small.avr, COLOR_HSV2BGR)),
+            'op_big': 255 - (cvtColor(self.op_big.avr, COLOR_HSV2BGR)),
+            'op_small': 255 - (cvtColor(self.op_small.avr, COLOR_HSV2BGR)),
+            'ball': 255 - (cvtColor(self.ball.avr, COLOR_HSV2BGR)),
+            'field': 255 - (cvtColor(self.field.avr, COLOR_HSV2BGR))
+        }
+        self.centroid_colors = defaultdict(lambda: (255, 255, 255), cen_colors)

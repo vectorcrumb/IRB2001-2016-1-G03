@@ -1,14 +1,15 @@
 import numpy as np
 import cv2, time
 
-x_co, y_co = 0,0
-cams = 2
+x_co, y_co = 0, 0
+cams = 0
 
 
 def on_mouse(event, x, y, flag, param):
     global x_co, y_co
     if event == cv2.EVENT_MOUSEMOVE:
         x_co, y_co = x, y
+        print(hsv[y, x])
 
 detector_mode = 1
 prev_val = ""
@@ -44,6 +45,7 @@ elif detector_mode == 1:
         cv2.imshow("Detector", img)
         prev_val = value
         ret, img = cam.read()
+        # print(cv2.waitKey(10))
         if cv2.waitKey(10) == 27:
             cam.release()
             break
