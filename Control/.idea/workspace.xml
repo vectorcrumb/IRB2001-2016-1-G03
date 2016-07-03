@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d9b3a6a5-0b0e-42f1-b29d-ca421815a800" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Vision/main.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Vision/Camera_mouse_event.py" afterPath="$PROJECT_DIR$/Vision/keyboard_control_hsv.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Vision/mainHSV.py" afterPath="$PROJECT_DIR$/Vision/simulator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Vis/Ranges.py" afterPath="$PROJECT_DIR$/Vis/Ranges.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Vision/hsvReader.py" afterPath="$PROJECT_DIR$/Vision/hsvReader.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
     </list>
     <ignored path="Control.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -43,7 +39,7 @@
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="175" column="29" selection-start-line="175" selection-start-column="29" selection-end-line="175" selection-end-column="29" />
+              <caret line="243" column="34" selection-start-line="243" selection-start-column="34" selection-end-line="243" selection-end-column="34" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
                 <element signature="e#323#908#0" expanded="false" />
@@ -54,26 +50,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Ranges.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Ranges.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Vis/Ranges.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="11" column="64" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
+            <state vertical-scroll-proportion="0.9661017">
+              <caret line="69" column="59" selection-start-line="69" selection-start-column="59" selection-end-line="69" selection-end-column="59" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hsvReader.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Vision/hsvReader.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.23728813">
-              <caret line="25" column="16" selection-start-line="25" selection-start-column="16" selection-end-line="25" selection-end-column="16" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -99,11 +83,11 @@
         <option value="$PROJECT_DIR$/Vision/mainHSV.py" />
         <option value="$PROJECT_DIR$/comms.py" />
         <option value="$PROJECT_DIR$/Vis/__init__.py" />
-        <option value="$PROJECT_DIR$/Vision/hsvReader.py" />
         <option value="$PROJECT_DIR$/Vision/hougher.py" />
-        <option value="$PROJECT_DIR$/Vis/Ranges.py" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/Vision/Camera_mouse_event.py" />
+        <option value="$PROJECT_DIR$/Vision/hsvReader.py" />
+        <option value="$PROJECT_DIR$/Vis/Ranges.py" />
       </list>
     </option>
   </component>
@@ -537,7 +521,13 @@
       <option name="project" value="LOCAL" />
       <updated>1467251368421</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Worked heavily on main code. Added state machine for defensive maneuvers and worked on ball and field tracking. TODO: Add offensive maneuvers and remote control.">
+      <created>1467534594080</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1467534594080</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TodoView">
@@ -551,23 +541,23 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3284553" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49593496" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.58699185" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3284553" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15772358" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41300812" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24886878" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24886878" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32520324" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24962293" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.60487807" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -612,7 +602,8 @@
     <MESSAGE value="Added more stuff yo" />
     <MESSAGE value="Remade code to only function with +/-30, +80 values" />
     <MESSAGE value="Played around with Vision HSV code." />
-    <option name="LAST_COMMIT_MESSAGE" value="Played around with Vision HSV code." />
+    <MESSAGE value="Worked heavily on main code. Added state machine for defensive maneuvers and worked on ball and field tracking. TODO: Add offensive maneuvers and remote control." />
+    <option name="LAST_COMMIT_MESSAGE" value="Worked heavily on main code. Added state machine for defensive maneuvers and worked on ball and field tracking. TODO: Add offensive maneuvers and remote control." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -654,7 +645,7 @@
           <caret line="84" column="24" selection-start-line="84" selection-start-column="24" selection-end-line="84" selection-end-column="24" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
+            <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -724,7 +715,7 @@
           <caret line="61" column="19" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
+            <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -779,7 +770,7 @@
           <caret line="61" column="19" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
+            <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -834,7 +825,7 @@
           <caret line="11" column="20" selection-start-line="11" selection-start-column="20" selection-end-line="11" selection-end-column="20" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
+            <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -898,30 +889,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="175" column="29" selection-start-line="175" selection-start-column="29" selection-end-line="175" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-            <element signature="e#323#908#0" expanded="false" />
-            <element signature="e#1050#1144#0" expanded="false" />
-            <element signature="e#2048#2604#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Vis/Ranges.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="11" column="64" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <marker date="1467529521869" expanded="false" signature="3279:3577" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Vision/simulator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -950,10 +917,34 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Vision/hsvReader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.23728813">
-          <caret line="25" column="16" selection-start-line="25" selection-start-column="16" selection-end-line="25" selection-end-column="16" />
+        <state vertical-scroll-proportion="-0.06779661">
+          <caret line="19" column="22" selection-start-line="19" selection-start-column="22" selection-end-line="19" selection-end-column="22" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="243" column="34" selection-start-line="243" selection-start-column="34" selection-end-line="243" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+            <element signature="e#323#908#0" expanded="false" />
+            <element signature="e#1050#1144#0" expanded="false" />
+            <element signature="e#2048#2604#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Vis/Ranges.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.9661017">
+          <caret line="69" column="59" selection-start-line="69" selection-start-column="59" selection-end-line="69" selection-end-column="59" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1467535486038" expanded="true" signature="3491:3789" placeholder="..." />
           </folding>
         </state>
       </provider>

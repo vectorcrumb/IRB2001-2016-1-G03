@@ -26,9 +26,11 @@ class ColorTuple:
         return value
 
     @staticmethod
-    def mod_array_first(val_array, mod):
+    def mod_array_first(val_array, modh, mods, modv):
         new_array = val_array.copy()
-        new_array[0] = ColorTuple.over_clamp(val_array[0] + mod)
+        new_array[0] = ColorTuple.over_clamp(val_array[0] + modh)
+        new_array[1] = ColorTuple.over_clamp(val_array[1] + mods, min_val=0, max_val=255)
+        new_array[2] = ColorTuple.over_clamp(val_array[2] + modv, min_val=0, max_val=255)
         return new_array
 
     @property
@@ -51,7 +53,7 @@ class ColorTuple:
                 if flag:
                     self._low = value
                 else:
-                    self._low = self.mod_array_first(value, -5)
+                    self._low = self.mod_array_first(value, -5, -30, -30)
             elif type(value) == int:
                 self._low[0] = self.over_clamp(value - self.thresh)
         self._avr = np.hstack((self._low, self._low)).mean(axis=0)
@@ -72,7 +74,7 @@ class ColorTuple:
                 if flag:
                     self._high = value
                 else:
-                    self._high = self.mod_array_first(value, 5)
+                    self._high = self.mod_array_first(value, 5, 30, 30)
             elif type(value) == int:
                 self._high[0] = self.over_clamp(value + self.thresh)
         self._avr = np.hstack((self._low, self._low)).mean(axis=0)

@@ -11,13 +11,14 @@ def on_mouse(event, x, y, flag, param):
         x_co, y_co = x, y
         print(hsv[y, x])
 
+
 detector_mode = 1
 prev_val = ""
 
 if detector_mode == 0:
     img = cv2.imread('test1.jpg', cv2.IMREAD_COLOR)
     o_img = img.copy()
-    b_img = cv2.blur(img, (3,3))
+    b_img = cv2.blur(img, (3, 3))
     hsv = cv2.cvtColor(b_img, cv2.COLOR_BGR2HSV)
     while True:
         img = o_img.copy()
