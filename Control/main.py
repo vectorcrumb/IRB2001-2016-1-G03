@@ -92,15 +92,6 @@ def write_debug_window(debug_vals):
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
     return image
 
-
-def write_centroid_window(centroids_vals):
-    image = zeros((len(centroids_vals) * 40, 400, 3), uint8)
-    for n, item in enumerate(centroids_vals.items()):
-        cv2.putText(image, "{}: {}".format(*item), (10, 20 + n*40), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
-    return image
-
-
 # Mapping function
 # FIXME Given a neg value in a 0 to pos range, the function returns a neg value. Is that valid?
 def cmap(x, in_min, in_max, out_min, out_max):
@@ -502,7 +493,7 @@ while ret:
         out.write(img)
     # Show debug window
     cv2.imshow("Debug Information", write_debug_window(debug_dict))
-    cv2.imshow("Centroid Information", write_centroid_window(centroids))
+    cv2.imshow("Centroid Information", write_debug_window(centroids))
     # Obtain next frame, confirmation, blurred HSV image
     ret, img = cam.read()
     blurred_img = cv2.blur(img, (10, 10))
