@@ -8,6 +8,9 @@ from math import atan2, sqrt, radians, degrees, ceil
 # Calculate angle error given the robot orientation and a goal point
 # noinspection PyUnusedLocal
 def angle_error(pos_robotg, pos_robotc, pos_f):
+    pos_robotg = list(map(int, pos_robotg))
+    pos_robotc = list(map(int, pos_robotc))
+    pos_f = list(map(int, pos_f))
     phi = atan2(pos_robotc[1] - pos_robotg[1], pos_robotc[0] - pos_robotg[0])
     th = atan2(pos_f[1] - pos_robotg[1], pos_f[0] - pos_robotg[0])
     error = th - phi
@@ -51,11 +54,15 @@ def mouse_event(event, x, y, flags, param):
             print("s: op_small")
             print("z: ball")
             print("x: field")
+            print("p: coordinates")
             color_key = cv2.waitKey(0)
-            try:
-                ranges.update(chr(color_key), hsv_img[y, x])
-            except ValueError:
-                print("Wrong key!")
+            if chr(color_key) == 'p':
+                print("Selected Point: {}".format((x, y)))
+            else:
+                try:
+                    ranges.update(chr(color_key), hsv_img[y, x])
+                except ValueError:
+                    print("Wrong key!")
 
 
 # Generates packet to send to robot over sockets
@@ -63,6 +70,7 @@ def motors_to_bytes(left_vel, right_vel):
     # TODO Implemente normalizer
     left_vel = 100 if left_vel > 100 else (-100 if left_vel < -100 else left_vel)
     right_vel = 100 if right_vel > 100 else (-100 if right_vel < -100 else right_vel)
+    right_vel = int(right_vel * 0.8)
     if motor_debug:
         print("Constrained: ", left_vel, "; ", right_vel)
         print("Dirs: ", 1 if left_vel > 0 else 2, "; ", 1 if right_vel > 0 else 2)
@@ -103,18 +111,22 @@ IP = "192.168.0.140"
 PORT = 2000
 BUF_SIZE = 9
 PASS = "G03"
-payload_debug = False
+payload_debug = True
 no_fi = False
 connected = no_fi
 
 # Robot variables
 # Epsilon is the maximum allowed angle error in radians(degrees)
 eps_ang = radians(15)
-rotate_vel = 48
-move_vel = 70
-guard_vel = 60
+eps_guard_ang = radians(5)
+rotate_vel = 70
+move_vel = 80
+guard_vel = 55
 motor_debug = False
 angle_debug = False
+goal_debug = False
+state_G_debug = False
+force_center_field = True
 key_guard = 0
 
 # Lab HSV Values
@@ -132,32 +144,32 @@ key_guard = 0
 # upper_verde_cancha = array([90, 255, 255])
 
 # Home HSV Values
-lower_amarillo = array([12, 200, 160])
-upper_amarillo = array([22, 255, 255])
-lower_rojo = array([0, 190, 220])
-upper_rojo = array([10, 255, 255])
-lower_verde = array([23, 200, 100])
-upper_verde = array([33, 255, 200])
-lower_morado = array([162, 10, 137])
-upper_morado = array([172, 255, 255])
-lower_azul = array([110, 120, 178])
-upper_azul = array([120, 255, 255])
-lower_verde_cancha = array([7, 215, 127])
-upper_verde_cancha = array([11, 255, 185])
+lower_amarillo = array([24, 220, 140])
+upper_amarillo = array([34, 255, 240])
+lower_rojo = array([4, 200, 200])
+upper_rojo = array([14, 255, 255])
+lower_verde = array([40, 210, 125])
+upper_verde = array([50, 250, 135])
+lower_morado = array([15, 215, 170])
+upper_morado = array([25, 250, 190])
+lower_azul = array([95, 70, 95])
+upper_azul = array([110, 125, 160])
+lower_verde_cancha = array([15, 190, 130])
+upper_verde_cancha = array([25, 250, 185])
 
 # Generate ranges object, store HSV values and define centroid colors. Assignment of ranges is done
 # on different lines to make it easier to swap colors on robots
 ranges = Ranges(threshold=7)
-ranges.self_big.low = (lower_verde, True)
-ranges.self_big.high = (upper_verde, True)
+ranges.self_big.low = (lower_azul, True)
+ranges.self_big.high = (upper_azul, True)
 ranges.self_small.low = (lower_rojo, True)
 ranges.self_small.high = (upper_rojo, True)
 ranges.ball.low = (lower_amarillo, True)
 ranges.ball.high = (upper_amarillo, True)
-ranges.op_big.low = (lower_azul, True)
-ranges.op_big.high = (upper_azul, True)
-ranges.op_small.low = (lower_morado, True)
-ranges.op_small.high = (upper_morado, True)
+ranges.op_big.low = (lower_verde, True)
+ranges.op_big.high = (upper_verde, True)
+ranges.op_small.low = (lower_rojo, True)
+ranges.op_small.high = (upper_rojo, True)
 ranges.field.low = (lower_verde_cancha, True)
 ranges.field.high = (upper_verde_cancha, True)
 ranges.def_centroid_colors()
@@ -196,6 +208,9 @@ print("Connected to bot")
 cv2.namedWindow('Camera feed', cv2.WINDOW_AUTOSIZE)
 cv2.setMouseCallback('Camera feed', mouse_event)
 
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter('log.avi', fourcc, 20.0, tuple(reversed(img.shape[:-1])))
+
 # Vision loop
 while ret:
     masks = ranges.masking(hsv_img)
@@ -209,24 +224,37 @@ while ret:
         # If the area (m00) of a mask is 0, avoid the error by setting the centroid to the origin
         except ZeroDivisionError:
             centroids[name] = (0, 0)
+    centroids['op_big'] = (583, 167)
+    centroids['op_small'] = (541, 174)
     # If the goal points have already been fully defined, calculate the centroid between both
     if len(goal_points) >= 4:
         centroids['goal1'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
                                    zip(goal_points[0], goal_points[1]))
         centroids['goal2'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
                                    zip(goal_points[2], goal_points[3]))
+        if force_center_field:
+            centroids['field'] = (0, 0)
         # If the field centroid cannot be defined by HSV masking, define it by finding the average between both goals
         if centroids['field'] == (0, 0):
             centroids['field'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
                                        zip(centroids['goal1'], centroids['goal2']))
-    # Draw centroids. The colors are the inverse of the average of the ranges
+    # Draw centroids. The colors are the inverse of the average of the ranges\
     for name, centroid in centroids.items():
         if centroid != (0, 0):
-            img = cv2.circle(img, centroid, 3, ranges.centroid_colors[name], -1)
+            if name not in ['goal1', 'goal2']:
+                color = list(map(int, ranges.centroid_colors[name][0][0]))
+            else:
+                color = ranges.centroid_colors[name]
+            img = cv2.circle(img=img, center=centroid, radius=3, color=tuple(color), thickness=-1)
     # Add robot centroid
     centroids['self_robot'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
                                     zip(centroids['self_big'], centroids['self_small']))
     img = cv2.circle(img, centroids['self_robot'], 3, (255, 0, 0), -1)
+    img = cv2.circle(img, tuple(map(int, goal)), 3, (0, 255, 0), -1)
+    # Show false goal if GUARD state is 2 or 3
+    if key == 2 and key_guard in [2, 3]:
+        goal = tuple(map(int, goal))
+        img = cv2.circle(img, (centroids['self_big'][0], goal[1]), 3, (0, 0, 255), -1)
     # Show HSV value under mouse
     if debug_HSV:
         value = "H: {0}, S: {1}, V: {2}".format(*[hsv_img.item(y_co, x_co, i) for i in range(3)])
@@ -270,14 +298,19 @@ while ret:
             # accumulating error in the x_coord
             elif key_guard == 1:
                 goal = (centroids['goal1'][0] + 30, centroids['goal1'][1])
-            # State 2: Finally, the robot must guard the goal from incoming shots. This may be done in two ways:
+            # State 2: Align robot in an orientation parallel to the side of the field. The goal is set at the same
+            # x_coord as the shifted goal and at the top y_coord position.
+            elif key_guard == 2:
+                goal = (centroids['goal1'][0] + 30, 0)
+            # State 3: Finally, the robot must guard the goal from incoming shots. This may be done in two ways:
             # Firstly, the enemy robot points can generate a linear to function which can be evaluated at the
             # current robot x_coord and return a projected ball position. However, because the goal is not much larger
             # than 2 robot lengths, we decide to map the ball y_coord to a corresponding point in the goal. This map
             # operation translates between the width of the field to width of the goal minus a robot radius at each end
-            elif key_guard == 2:
-                goal = cmap(centroids["ball"][1], 0, img.shape[0],
-                            goal_points[0][1] + robot_radius, goal_points[1][1] - robot_radius)
+            elif key_guard == 3:
+                goal = (centroids['goal1'][0] + 30,
+                        cmap(centroids["ball"][1], 0, img.shape[0],
+                             goal_points[0][1] + robot_radius, goal_points[1][1] - robot_radius))
         # Once the goal position has been decided, commence path planning. A (0, 0) goal position indicate a null value,
         # and all path planning must cease. Begin by calculating angle error to goal position. Default to no movement
         # if the goal is undefined.
@@ -286,8 +319,8 @@ while ret:
         else:
             e_ang = angle_error(centroids['self_big'], centroids['self_small'], goal)
             # If the GUARD state machine is currently guarding the goal, override the motors to only advance or reverse
-            if key_guard == 2:
-                if centroids["ball"][1] < centroids["self_robot"][1]:
+            if key_guard == 3:
+                if centroids["ball"][1] > centroids["self_robot"][1]:
                     payload = motors_to_bytes(-guard_vel, -guard_vel)
                 else:
                     payload = motors_to_bytes(guard_vel, guard_vel)
@@ -315,13 +348,25 @@ while ret:
                     payload = motors_to_bytes(0, 0)
             # For operation 2, set the deadband at the robot radius plus 30 pixels
             if key == 2:
-                if dist < robot_radius + 30:
-                    # Once the final condition is reached, change the state variable by one and limit to 2
-                    key_guard += 1
-                    key_guard = 2 if key_guard > 2 else key_guard
-            # print("Goal to: ", goal)
+                err_guard_ang = angle_error(centroids['self_big'], centroids['self_small'],
+                                            (centroids['self_big'][0], goal[1]))
+                if key_guard == 2:
+                    if abs(e_ang) < eps_guard_ang:
+                        key_guard += 1
+                elif key_guard == 3:
+                    if abs(err_guard_ang) > eps_guard_ang:
+                        key_guard = 2
+                else:
+                    if dist < robot_radius + 20:
+                        # Once the final condition is reached, change the state variable by one and limit to 2
+                        key_guard += 1
+                        key_guard = 3 if key_guard > 3 else key_guard
+            if goal_debug:
+                print("Goal to: ", goal)
             if angle_debug:
                 print(degrees(e_ang))
+            if state_G_debug:
+                print(key_guard)
     # Stop motors if there are undefined goal points.
     else:
         payload = motors_to_bytes(0, 0)
@@ -332,6 +377,8 @@ while ret:
     # Send payload to robot
     if not no_fi:
         sock.send(payload)
+    # Write log video
+    out.write(img)
     # Obtain next frame, confirmation, blurred HSV image
     ret, img = cam.read()
     blurred_img = cv2.blur(img, (10, 10))
@@ -350,5 +397,6 @@ if not no_fi:
     sock.send(motors_to_bytes(0, 0))
 # Standard exit procedure
 cam.release()
+out.release()
 cv2.destroyAllWindows()
 exit()

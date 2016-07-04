@@ -35,7 +35,8 @@ class ColorTuple:
 
     @property
     def avr(self):
-        return self._avr
+        # self._avr = np.hstack((self._low, self._low)).mean(axis=0)
+        return self._avr.astype(np.uint8, copy=False)
 
     @property
     def low(self):
@@ -56,7 +57,7 @@ class ColorTuple:
                     self._low = self.mod_array_first(value, -5, -30, -30)
             elif type(value) == int:
                 self._low[0] = self.over_clamp(value - self.thresh)
-        self._avr = np.hstack((self._low, self._low)).mean(axis=0)
+            self._avr = np.vstack((self._low, self._low)).mean(axis=0)
 
     @property
     def high(self):
@@ -77,7 +78,7 @@ class ColorTuple:
                     self._high = self.mod_array_first(value, 5, 30, 30)
             elif type(value) == int:
                 self._high[0] = self.over_clamp(value + self.thresh)
-        self._avr = np.hstack((self._low, self._low)).mean(axis=0)
+            self._avr = np.vstack((self._low, self._low)).mean(axis=0)
 
 
 # noinspection PyArgumentList
@@ -132,11 +133,13 @@ class Ranges:
 
     def def_centroid_colors(self):
         cen_colors = {
-            'self_big': 255 - (cvtColor(self.self_big.avr, COLOR_HSV2BGR)),
-            'self_small': 255 - (cvtColor(self.self_small.avr, COLOR_HSV2BGR)),
-            'op_big': 255 - (cvtColor(self.op_big.avr, COLOR_HSV2BGR)),
-            'op_small': 255 - (cvtColor(self.op_small.avr, COLOR_HSV2BGR)),
-            'ball': 255 - (cvtColor(self.ball.avr, COLOR_HSV2BGR)),
-            'field': 255 - (cvtColor(self.field.avr, COLOR_HSV2BGR))
+            'self_big': 255 - (cvtColor(np.uint8([[list(self.self_big.avr)]]), COLOR_HSV2BGR)),
+            'self_small': 255 - (cvtColor(np.uint8([[list(self.self_small.avr)]]), COLOR_HSV2BGR)),
+            'op_big': 255 - (cvtColor(np.uint8([[list(self.op_big.avr)]]), COLOR_HSV2BGR)),
+            'op_small': 255 - (cvtColor(np.uint8([[list(self.op_small.avr)]]), COLOR_HSV2BGR)),
+            'ball': 255 - (cvtColor(np.uint8([[list(self.ball.avr)]]), COLOR_HSV2BGR)),
+            'field': 255 - (cvtColor(np.uint8([[list(self.field.avr)]]), COLOR_HSV2BGR)),
+            'goal1': (255, 255, 255),
+            'goal2': (255, 255, 255)
         }
         self.centroid_colors = defaultdict(lambda: (255, 255, 255), cen_colors)
