@@ -5,6 +5,9 @@ from socket import socket, AF_INET, SOCK_STREAM
 from numpy import array, uint8, zeros
 from math import atan2, sqrt, radians, degrees, ceil, pi
 
+packet = bytearray()
+prev_packet = bytearray()
+
 
 # Calculate angle error given the robot orientation and a goal point
 # noinspection PyUnusedLocal
@@ -68,15 +71,24 @@ def mouse_event(event, x, y, flags, param):
 
 # Generates packet to send to robot over sockets
 def motors_to_bytes(left_vel, right_vel):
-    # TODO Implemente normalizer
+    global packet, prev_packet
+    global prev_vel_l, prev_vel_r, speed_counter
+    # TODO Implement normalizer
     left_vel = 100 if left_vel > 100 else (-100 if left_vel < -100 else left_vel)
     right_vel = 100 if right_vel > 100 else (-100 if right_vel < -100 else right_vel)
-    right_vel = int(right_vel * 0.8)
     if motor_debug:
         debug_dict['motor_vals'] = (left_vel, right_vel)
         debug_dict['dirs'] = (1 if left_vel > 0 else 2, 1 if right_vel > 0 else 2)
-        # print("Constrained: ", left_vel, "; ", right_vel)
-        # print("Dirs: ", 1 if left_vel > 0 else 2, "; ", 1 if right_vel > 0 else 2)
+    prev_packet = list(packet)
+    if speed_counter < len(start_speeds):
+        if prev_packet and packet:
+            if prev_packet[2] != list(packet)[2] and prev_packet[3] != list(packet)[3]:
+                left_vel = (abs(left_vel) / left_vel) * start_speeds[speed_counter]
+                right_vel = (abs(right_vel) / right_vel) * start_speeds[speed_counter]
+            else:
+                speed_counter = 0
+    prev_vel_l = left_vel
+    prev_vel_r = right_vel
     packet = bytearray()
     packet.append(abs(left_vel))
     packet.append(abs(right_vel))
@@ -88,9 +100,10 @@ def motors_to_bytes(left_vel, right_vel):
 def write_debug_window(debug_vals):
     image = zeros((len(debug_vals) * 40, 400, 3), uint8)
     for n, item in enumerate(debug_vals.items()):
-        cv2.putText(image, "{}: {}".format(*item), (10, 20 + n*40), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(image, "{}: {}".format(*item), (10, 20 + n * 40), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
     return image
+
 
 # Mapping function
 # FIXME Given a neg value in a 0 to pos range, the function returns a neg value. Is that valid?
@@ -123,14 +136,14 @@ PORT = 2000
 BUF_SIZE = 9
 PASS = "G03"
 payload_debug = True
-no_fi = True
+no_fi = False
 connected = no_fi
 
 # Robot variables
 # Epsilon is the maximum allowed angle error in radians(degrees)
 eps_ang = radians(15)
 eps_guard_ang = radians(5)
-rotate_vel = 70
+rotate_vel = 50
 move_vel = 80
 guard_vel = 55
 strike_vel = 95
@@ -140,51 +153,54 @@ angle_debug = True
 goal_debug = True
 state_G_debug = True
 force_center_field = True
+start_speeds = [100, 80]
+prev_vel_l, prev_vel_r = 0, 0
+speed_counter = 0
 key_guard = 0
 key_attack = 0
 debug_dict = {}
 
 # Lab HSV Values
-# lower_amarillo = array([24,157,181])
-# upper_amarillo = array([34,255,255])
-# lower_rojo = array([170,52,178])
-# upper_rojo = array([179,255,255])
-# lower_verde = array([46,185,187])
-# upper_verde = array([56,255,255])
-# lower_morado = array([162,10,137])
-# upper_morado = array([172,255,255])
-# lower_azul = array([110,120,178])
-# upper_azul = array([120,255,255])
-# lower_verde_cancha = array([80, 50, 50])
-# upper_verde_cancha = array([90, 255, 255])
+lower_amarillo = array([24, 157, 181])
+upper_amarillo = array([34, 255, 255])
+lower_rojo = array([0, 200, 200])
+upper_rojo = array([9, 255, 255])
+lower_verde = array([46, 185, 187])
+upper_verde = array([56, 255, 255])
+lower_morado = array([162, 10, 137])
+upper_morado = array([172, 255, 255])
+lower_azul = array([100, 160, 130])
+upper_azul = array([110, 200, 190])
+lower_verde_cancha = array([80, 50, 50])
+upper_verde_cancha = array([90, 255, 255])
 
 # Home HSV Values
-lower_amarillo = array([24, 220, 140])
-upper_amarillo = array([34, 255, 240])
-lower_rojo = array([4, 200, 200])
-upper_rojo = array([14, 255, 255])
-lower_verde = array([40, 210, 125])
-upper_verde = array([50, 250, 135])
-lower_morado = array([15, 215, 170])
-upper_morado = array([25, 250, 190])
-lower_azul = array([95, 70, 95])
-upper_azul = array([110, 125, 160])
-lower_verde_cancha = array([15, 190, 130])
-upper_verde_cancha = array([25, 250, 185])
+# lower_amarillo = array([24, 220, 140])
+# upper_amarillo = array([34, 255, 240])
+# lower_rojo = array([4, 200, 200])
+# upper_rojo = array([14, 255, 255])
+# lower_verde = array([40, 210, 125])
+# upper_verde = array([50, 250, 135])
+# lower_morado = array([15, 215, 170])
+# upper_morado = array([25, 250, 190])
+# lower_azul = array([95, 70, 95])
+# upper_azul = array([110, 125, 160])
+# lower_verde_cancha = array([15, 190, 130])
+# upper_verde_cancha = array([25, 250, 185])
 
 # Generate ranges object, store HSV values and define centroid colors. Assignment of ranges is done
 # on different lines to make it easier to swap colors on robots
 ranges = Ranges(threshold=7)
-ranges.self_big.low = (lower_azul, True)
-ranges.self_big.high = (upper_azul, True)
-ranges.self_small.low = (lower_rojo, True)
-ranges.self_small.high = (upper_rojo, True)
+ranges.self_big.low = (lower_verde, True)
+ranges.self_big.high = (upper_verde, True)
+ranges.self_small.low = (lower_morado, True)
+ranges.self_small.high = (upper_morado, True)
 ranges.ball.low = (lower_amarillo, True)
 ranges.ball.high = (upper_amarillo, True)
-ranges.op_big.low = (lower_verde, True)
-ranges.op_big.high = (upper_verde, True)
-ranges.op_small.low = (lower_rojo, True)
-ranges.op_small.high = (upper_rojo, True)
+ranges.op_big.low = (lower_rojo, True)
+ranges.op_big.high = (upper_rojo, True)
+ranges.op_small.low = (lower_azul, True)
+ranges.op_small.high = (upper_azul, True)
 ranges.field.low = (lower_verde_cancha, True)
 ranges.field.high = (upper_verde_cancha, True)
 ranges.def_centroid_colors()
@@ -230,6 +246,7 @@ if video_debug:
 
 # Vision loop
 while ret:
+    global count
     masks = ranges.masking(hsv_img)
     # Calculate moments given the masks
     moments = {name: cv2.moments(img_mask) for name, img_mask in masks.items()}
@@ -242,8 +259,8 @@ while ret:
         except ZeroDivisionError:
             centroids[name] = (0, 0)
     # Simulate opponent robot
-    centroids['op_big'] = (583, 167)
-    centroids['op_small'] = (541, 174)
+    # centroids['op_big'] = (583, 167)
+    # centroids['op_small'] = (541, 174)
     # If the goal points have already been fully defined, calculate the centroid between both
     if len(goal_points) >= 4:
         centroids['goal1'] = tuple(int((front_coord + back_coord) / 2) for front_coord, back_coord in
@@ -380,7 +397,8 @@ while ret:
             # State 2 moves the robot vertically to the final position on the ball's side that's opposite to the goal
             elif key_attack == 2:
                 applySat_x = centroids["ball"][0] + delta_x > centroids['goal1'][0] - 30
-                applySat_y = centroids["ball"][1] + delta_y > img.shape[0] - robot_radius * 2 or centroids["ball"][1] + delta_y < robot_radius * 2
+                applySat_y = centroids["ball"][1] + delta_y > img.shape[0] - robot_radius * 2 or centroids["ball"][
+                                                                                                     1] + delta_y < robot_radius * 2
                 goalx = centroids["ball"][0] + delta_x if not applySat_x else centroids['goal1'][0] - 30
                 if centroids["ball"][1] + delta_y > img.shape[0] - robot_radius * 2:
                     goaly = img.shape[0] - robot_radius * 2
